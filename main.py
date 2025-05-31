@@ -8,6 +8,21 @@ from scipy.stats import chi2
 def get_B_expectation(xs, A, lamb):
     return A * np.exp(-xs / lamb)
 
+# χ² calculation using binned background data
+def chi2_estimate(A, lamb, x, y):
+    for i, A_trial in enumerate(A):
+        for j, lamb_trial in enumerate(lamb):
+            # Calculate expected background
+            B_expected = get_B_expectation(x, A_trial, lamb_trial)
+            chi2 = np.sum((y - B_expected)**2 / B_expected)
+            chi2_grid[i, j] = chi2
+
+    min_index = np.unravel_index(np.argmin(chi2_grid), chi2_grid.shape)
+    A_estimate, lamb_estimate = A_values[min_index[0]], lamb_values[min_index[1]]
+    min_chi2 = chi2_grid[min_index]
+    print(f"χ² Results: A = {A_estimate:.1f}, λ = {lamb_estimate:.1f}, χ²/DoF = {min_chi2:.2f}")
+    return A_estimate, lamb_estimate, min_chi2
+
 # Generate data
 vals = np.array(STOM_higgs_tools.generate_data(n_signals=400))
 
@@ -47,27 +62,14 @@ A_values = np.linspace(0.5*A_mle, 1.5*A_mle, 50)
 lamb_values = np.linspace(0.5*lamb_mle, 1.5*lamb_mle, 50)
 chi2_grid = np.zeros((len(A_values), len(lamb_values)))
 
-# χ² calculation using binned background data
-def chi2_estimate(A, lamb, x, y):
-    for i, A_trial in enumerate(A):
-        for j, lamb_trial in enumerate(lamb):
-            # Calculate expected background
-            B_expected = get_B_expectation(x, A_trial, lamb_trial)
-            chi2 = np.sum((y - B_expected)**2 / B_expected)
-            chi2_grid[i, j] = chi2
-
-    min_index = np.unravel_index(np.argmin(chi2_grid), chi2_grid.shape)
-    A_estimate, lamb_estimate = A_values[min_index[0]], lamb_values[min_index[1]]
-    min_chi2 = chi2_grid[min_index]
-    print(f"χ² Results: A = {A_estimate:.1f}, λ = {lamb_estimate:.1f}, χ²/DoF = {min_chi2:.2f}")
-    return A_estimate, lamb_estimate, min_chi2
-
 A_chi2, lamb_chi2, chi2_min = chi2_estimate(A_values, lamb_values, mean_background, bin_height_background)
+p_value = 1 - chi2.cdf(chi2_min, (len(mean_background) - 2))
+print(f"Without signal (Background Only): p_value = {p_value} >> 5%, do not reject.")
 
 # background only hypothesis test (including signal region)
 A_chi2_with_signal, lamb_chi2_with_signal, chi2_min_with_signal = chi2_estimate(A_values, lamb_values, mean, bin_height)
 p_value = 1 - chi2.cdf(chi2_min_with_signal, (len(mean) - 2))
-print(f"p_value = {p_value} << 5%, should be rejected.")
+print(f"With signal (Background Only): p_value = {p_value} << 5%, should be rejected.")
 
 # Plot both fits
 x = np.linspace(104, 155, 500)
@@ -81,4 +83,3 @@ ax.set_ylabel("Number of entries")
 ax.legend()
 plt.savefig("histogram.png", bbox_inches='tight')
 plt.show()
-
