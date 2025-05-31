@@ -105,7 +105,7 @@ def main():
     print(f"\nFull fit with signal and background: p_value = {p_value} < 5%, do not reject.")
 
     # find amplitude for 5% p value
-    for amp in range(1100,1200): #trial and error
+    for amp in range(1116,1200): #trial and error
         __A_chi2, __lamb_chi2, __chi2_min = chi2_estimate(A_values, lamb_values, mean, bin_height, GAUSS_MEAN, GAUSS_STD, amp, False)
         p_value = 1 - sp_chi2.cdf(__chi2_min, (len(mean) - 2))
         if round(p_value,3) == 0.05:
@@ -118,7 +118,7 @@ def main():
     fig, ax = plt.subplots(figsize=(6, 4))
 
     x = np.linspace(104, 155, 500)
-    ax.plot(x, STOM_higgs_tools.get_B_expectation(x, A_mle, lamb_mle), label="MLE Fit", color='red')
+    #ax.plot(x, STOM_higgs_tools.get_B_expectation(x, A_mle, lamb_mle), label="MLE Fit", color='red')
     ax.plot(x, STOM_higgs_tools.get_B_expectation(x, A_chi2, lamb_chi2), '--', label="χ² Fit (background)", color='blue')
     #ax.plot(x, STOM_higgs_tools.get_B_expectation(x, A_chi2_with_signal, lamb_chi2_with_signal), '--', label="χ² Fit (background + signal)", color='yellow')
     ax.plot(x, STOM_higgs_tools.get_SB_expectation(x, ff_A_chi2, ff_lamb_chi2, GAUSS_MEAN, GAUSS_STD, GAUSS_AMP), '--', label="χ² Fit (background + signal)", color='green')
