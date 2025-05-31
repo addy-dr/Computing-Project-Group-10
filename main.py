@@ -57,9 +57,9 @@ def main():
     fig, ax = plt.subplots(figsize=(6, 4))
 
     x = np.linspace(104, 155, 500)
-    ax.plot(x, get_B_expectation(x, A_mle, lamb_mle), label="MLE Fit", color='red')
-    ax.plot(x, get_B_expectation(x, A_chi2, lamb_chi2), '--', label="χ² Fit (background)", color='blue')
-    ax.plot(x, get_B_expectation(x, A_chi2_with_signal, lamb_chi2_with_signal), '--', label="χ² Fit (background + signal)", color='yellow')
+    ax.plot(x, STOM_higgs_tools.get_B_expectation(x, A_mle, lamb_mle), label="MLE Fit", color='red')
+    ax.plot(x, STOM_higgs_tools.get_B_expectation(x, A_chi2, lamb_chi2), '--', label="χ² Fit (background)", color='blue')
+    ax.plot(x, STOM_higgs_tools.get_B_expectation(x, A_chi2_with_signal, lamb_chi2_with_signal), '--', label="χ² Fit (background + signal)", color='yellow')
     ax.errorbar(mean, bin_height, yerr=ystd, xerr=xstd, fmt='o', markersize=3, color='black')
 
     ax.set_xlim(104, 155)

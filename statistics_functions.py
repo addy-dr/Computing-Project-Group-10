@@ -1,4 +1,5 @@
 import numpy as np
+import STOM_higgs_tools
 
 ### FUNCTION DEFINITIONS FOR MAIN.PY ###
 
@@ -22,7 +23,7 @@ def chi2_estimate(A_values, lamb_values, x, y):
     for i, A_trial in enumerate(A_values):
         for j, lamb_trial in enumerate(lamb_values):
             # Calculate expected background
-            B_expected = get_B_expectation(x, A_trial, lamb_trial)
+            B_expected = STOM_higgs_tools.get_B_expectation(x, A_trial, lamb_trial)
             chi2 = np.sum((y - B_expected)**2 / B_expected)
             chi2_grid[i, j] = chi2
 
@@ -31,7 +32,3 @@ def chi2_estimate(A_values, lamb_values, x, y):
     min_chi2 = chi2_grid[min_index]
     print(f"χ² Results: A = {A_estimate:.1f}, λ = {lamb_estimate:.1f}, χ²/DoF = {min_chi2:.2f}")
     return A_estimate, lamb_estimate, min_chi2
-
-
-def get_B_expectation(xs, A, lamb):
-    return A * np.exp(-xs / lamb)
