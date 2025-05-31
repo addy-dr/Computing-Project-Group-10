@@ -2,10 +2,18 @@ import STOM_higgs_tools
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import minimize
-from scipy.stats import chi2
+from scipy.stats import chi2 as sp_chi2 # prevent ambiguity with the variable chi2
+
+## CONSTANTS
+
+BINS = 30
+RANGE = [104.0, 155.0]
+
+GAUSS_AMP = 700
+GAUSS_MEAN = 125
+GAUSS_STD = 1.5
 
 ## FUNCTION DEFINITIONS
-
 
 def negative_log_likelihood(params, x_data, y_data):
     '''
@@ -21,18 +29,17 @@ def negative_log_likelihood(params, x_data, y_data):
     return nll
 
 
-def chi2_estimate(A_values, lamb_values, x, y):
-   '''
-   Performs a χ² search for the best values of A and lambda.
-   '''
-
+def chi2_estimate(A_values, lamb_values, xs, ys):
+    '''
+    Performs a χ² search for the best values of A and lambda.
+    '''
     chi2_grid = np.zeros((len(A_values), len(lamb_values)))
 
     for i, A_trial in enumerate(A_values):
         for j, lamb_trial in enumerate(lamb_values):
             # Calculate expected background
-            B_expected = STOM_higgs_tools.get_B_expectation(x, A_trial, lamb_trial)
-            chi2 = np.sum((y - B_expected)**2 / B_expected)
+            B_expected = STOM_higgs_tools.get_B_expectation(xs, A_trial, lamb_trial)
+            chi2 = np.sum((ys - B_expected)**2 / B_expected)
             chi2_grid[i, j] = chi2
 
     min_index = np.unravel_index(np.argmin(chi2_grid), chi2_grid.shape)
@@ -49,7 +56,7 @@ def main():
     vals = np.array(STOM_higgs_tools.generate_data(n_signals=400))
 
     # Histogram
-    bin_height, bin_edges = np.histogram(vals, range=[104.0, 155.0], bins=30)
+    bin_height, bin_edges = np.histogram(vals, range=RANGE, bins=BINS)
     mean = (bin_edges[:-1] + bin_edges[1:]) / 2
     ystd = np.sqrt(bin_height)
     xstd = (bin_edges[1:] - bin_edges[:-1]) / 2
@@ -80,14 +87,20 @@ def main():
     lamb_values = np.linspace(0.5*lamb_mle, 1.5*lamb_mle, 50)
 
     #χ² calculation using binned background data. Use function defined in statistics_functions
+    print("\nStart calculation for background data:")
     A_chi2, lamb_chi2, chi2_min = chi2_estimate(A_values, lamb_values, mean_background, bin_height_background)
-    p_value = 1 - chi2.cdf(chi2_min, (len(mean_background) - 2))
-    print(f"Without signal (Background Only): p_value = {p_value} >> 5%, do not reject.")
+    p_value = 1 - sp_chi2.cdf(chi2_min, (len(mean_background) - 2))
 
     # background only hypothesis test (including signal region)
+    print("\nWhat happens when we include our signal region?")
     A_chi2_with_signal, lamb_chi2_with_signal, chi2_min_with_signal = chi2_estimate(A_values, lamb_values, mean, bin_height)
-    p_value = 1 - chi2.cdf(chi2_min_with_signal, (len(mean) - 2))
+    p_value = 1 - sp_chi2.cdf(chi2_min_with_signal, (len(mean) - 2))
     print(f"With signal (Background Only): p_value = {p_value} << 5%, should be rejected.")
+
+    # signal plus background hypothesis
+    x = np.linspace(104, 155, 500)
+    y_gaussian = STOM_higgs_tools.get_SB_expectation(x, A_mle, lamb_mle, GAUSS_MEAN, GAUSS_STD, GAUSS_AMP)
+
 
 
     # Plot both fits
@@ -109,3 +122,5 @@ def main():
 
 
 main()
+
+
