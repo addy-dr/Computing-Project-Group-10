@@ -114,15 +114,15 @@ def main():
 
 
     # Plot fits
-    plt.rcParams.update({'font.size': 12, 'font.family': 'serif', 'figure.dpi': 400})
+    plt.rcParams.update({'font.size': 12, 'font.family': 'serif', 'figure.dpi': 600})
     fig, ax = plt.subplots(figsize=(6, 4))
 
     x = np.linspace(104, 155, 500)
     #ax.plot(x, STOM_higgs_tools.get_B_expectation(x, A_mle, lamb_mle), label="MLE Fit", color='red')
-    ax.plot(x, STOM_higgs_tools.get_B_expectation(x, A_chi2, lamb_chi2), '--', label="χ² Fit (background)", color='blue')
     #ax.plot(x, STOM_higgs_tools.get_B_expectation(x, A_chi2_with_signal, lamb_chi2_with_signal), '--', label="χ² Fit (background + signal)", color='yellow')
-    ax.plot(x, STOM_higgs_tools.get_SB_expectation(x, ff_A_chi2, ff_lamb_chi2, GAUSS_MEAN, GAUSS_STD, GAUSS_AMP), '--', label="χ² Fit (background + signal)", color='green')
-    ax.errorbar(mean, bin_height, yerr=ystd, xerr=xstd, fmt='o', markersize=3, color='black')
+    ax.plot(x, STOM_higgs_tools.get_SB_expectation(x, ff_A_chi2, ff_lamb_chi2, GAUSS_MEAN, GAUSS_STD, GAUSS_AMP), '--', label="Background Fit + Signal", color='green')
+    ax.plot(x, STOM_higgs_tools.get_B_expectation(x, A_chi2, lamb_chi2), label="Background Fit", color='red')
+    ax.errorbar(mean, bin_height, yerr=ystd, xerr=xstd, fmt='o', markersize=2.5, color='black', capsize=2, elinewidth=1, mew=1, label="Data")
 
     ax.set_xlim(104, 155)
     ax.set_xlabel("Rest mass (GeV)")
